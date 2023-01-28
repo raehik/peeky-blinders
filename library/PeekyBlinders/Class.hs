@@ -25,13 +25,19 @@ instance DS a => DD (Statically a) where dd = Statically <$> statically ds
 instance DS Word8 where ds = unsignedInt1
 deriving via Statically Word8 instance DD Word8
 
--- TODO use host endianness (and word size...)
-instance DS Int where ds = fromIntegral <$> leSignedInt8
-deriving via Statically Int instance DD Int
+-- TODO use host endianness and word size...
 
--- TODO use host endianness
+instance DS Word16 where ds = leUnsignedInt2
+deriving via Statically Word16 instance DD Word16
+
+instance DS Word32 where ds = leUnsignedInt4
+deriving via Statically Word32 instance DD Word32
+
 instance DS Word64 where ds = leUnsignedInt8
 deriving via Statically Word64 instance DD Word64
+
+instance DS Int where ds = fromIntegral <$> leSignedInt8
+deriving via Statically Int instance DD Int
 
 -- TODO we have to decide nullterm (C) or length prefix (Pascal). pretty sure
 -- latter is faster, if a bit bulkier for short strings.

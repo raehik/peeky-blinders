@@ -6,7 +6,8 @@ module PeekyBlinders.Generic where
 -- TODO raehik: non-implicit prelude bits below
 import Data.Functor
 import Control.Applicative
-import Prelude ( Num(..), Ord(..), otherwise )
+import Control.Monad
+import Prelude ( Num(..), Ord(..), otherwise, error )
 import Data.Word
 import Data.Bits
 import Data.Kind
@@ -34,24 +35,19 @@ instance DD c => GDD (K1 i c) where gdd = K1 <$> dd
 instance (GDS l, GDS r) => GDS (l :*: r) where gds = liftA2 (:*:) gds gds
 instance (GDD l, GDD r) => GDD (l :*: r) where gdd = liftA2 (:*:) gdd gdd
 
-instance (GDSS (l :+: r), SumSize (l :+: r)) => GDS (l :+: r) where
-    gds = gdss 0 (sumSize @(l :+: r))
+-- TODO NO SUM TYPES FOR STATIC, NOT EVEN CONSTANT SIZE ONES. SORRY MATE NO
+-- INTROSPECTION I DON'T THINK
 instance (GDDS (l :+: r), SumSize (l :+: r)) => GDD (l :+: r) where
-    gdd = gdds 0 (sumSize @(l :+: r))
+    gdd = dd @Word8 >>= gddst (sumSize @(l :+: r))
+
+-- from checkGetSum in binary
+gddst :: GDDS f => Word8 -> Word8 -> Dynamic (f p)
+gddst size code | code < size = gdds code size
+                | otherwise   = error "BAD >:(" -- fail "Unknown encoding for constructor"
+{-# INLINE gddst #-}
 
 instance GDS f => GDS (M1 i d f) where gds = M1 <$> gds
 instance GDD f => GDD (M1 i d f) where gdd = M1 <$> gdd
-
--- GDecodeStaticSum(gDecodeStaticSum)
-class GDSS f where gdss :: Word8 -> Word8 -> Static (f p)
-instance (GDSS l, GDSS r) => GDSS (l :+: r) where
-    gdss !code !size | code < sizeL = L1 <$> gdss code           sizeL
-                     | otherwise    = R1 <$> gdss (code - sizeL) sizeR
-      where
-        -- TODO use unchecked shift? maybe GHC optimizes it out anyway but
-        sizeL = size `shiftR` 1
-        sizeR = size - sizeL
-instance GDS a => GDSS (C1 c a) where gdss _ _ = gds
 
 -- GDecodeDynamicSum(gDecodeDynamicSum)
 class GDDS f where gdds :: Word8 -> Word8 -> Dynamic (f p)
