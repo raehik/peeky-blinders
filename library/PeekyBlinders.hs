@@ -106,6 +106,7 @@ newtype Dynamic output
         Int ->
         IO x
       )
+-- TODO raehik: ^ give a record name plz for easy deconstructing
 
 instance Functor Dynamic where
   {-# INLINE fmap #-}

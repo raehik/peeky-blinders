@@ -55,7 +55,10 @@ library
     UnboxedTuples
 
   default-language:   Haskell2010
-  exposed-modules:    PeekyBlinders
+  exposed-modules:
+    PeekyBlinders
+    PeekyBlinders.Class
+    PeekyBlinders.Generic
   other-modules:
     PeekyBlinders.FoldableExtras
     PeekyBlinders.Prelude
